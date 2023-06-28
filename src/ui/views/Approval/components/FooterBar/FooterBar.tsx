@@ -18,6 +18,7 @@ import { ActionGroup, Props as ActionGroupProps } from './ActionGroup';
 import { useThemeMode } from '@/ui/hooks/usePreference';
 import { findChain } from '@/utils/chain';
 import { GasLessToSign, GasLessNotEnough } from './GasLessComponents';
+import { formatDappURLToShow } from '@/ui/utils/url';
 
 interface Props extends Omit<ActionGroupProps, 'account'> {
   chain?: Chain;
@@ -190,7 +191,7 @@ export const FooterBar: React.FC<Props> = ({
     if (origin === INTERNAL_REQUEST_ORIGIN) {
       return 'Rabby Wallet';
     }
-    return origin;
+    return formatDappURLToShow(origin || '');
   }, [origin]);
 
   const { rules, processedRules } = useRabbySelector((s) => ({
