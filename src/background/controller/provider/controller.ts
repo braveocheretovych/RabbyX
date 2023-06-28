@@ -506,6 +506,13 @@ class ProviderController extends BaseController {
           swapService.postSwap(chain, hash, other);
           bridgeService.postBridge(chain, hash, other);
         }
+        sessionService.broadcastToDesktopOnly('transactionChanged', {
+          type: 'push-tx',
+          ...other,
+          value: approvalRes.value || '0x0',
+          hash: hash,
+          chain,
+        });
 
         statsData.submit = true;
         statsData.submitSuccess = true;
@@ -748,7 +755,19 @@ class ProviderController extends BaseController {
       if (notificationService.statsData?.signMethod) {
         statsData.signMethod = notificationService.statsData?.signMethod;
       }
+      // transactionHistoryService.removeSigningTx(signingTxId!);
       notificationService.setStatsData(statsData);
+
+      const errMsg = e.message || JSON.stringify(e);
+      // notification.create(
+      //   undefined,
+      //   i18n.t('background.error.txPushFailed'),
+      //   errMsg
+      // );
+      sessionService.broadcastToDesktopOnly('transactionChanged', {
+        type: 'push-failed',
+        errMsg,
+      });
       throw typeof e === 'object' ? e : new Error(e);
     }
   };
@@ -762,7 +781,7 @@ class ProviderController extends BaseController {
 
   @Reflect.metadata('SAFE', true)
   web3ClientVersion = () => {
-    return `Rabby/${process.env.release}`;
+    return `RabbyX/${globalThis.rabbyDesktop.appVersion}`;
   };
 
   @Reflect.metadata('APPROVAL', ['ETHSign', () => null, { height: 390 }])
@@ -993,7 +1012,7 @@ class ProviderController extends BaseController {
   };
 
   @Reflect.metadata('APPROVAL', [
-    'AddChain',
+    'SwitchChain',
     ({
       data: {
         params: [chainParams],
